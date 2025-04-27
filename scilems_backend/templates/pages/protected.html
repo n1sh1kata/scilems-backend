@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block title %}Protected{% endblock %}
+{% block content %}
+<h1>Protected Page</h1>
+<p>{{ message }}</p>
+<form method="POST" action="{% url 'logout' %}">
+    {% csrf_token %}
+    <button type="submit">Logout</button>
+</form>
+{% endblock %}
