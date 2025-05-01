@@ -8,10 +8,11 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]
 
-from .views import ProtectedView
+from .views import ProtectedView, AdminOnlyView
 
 urlpatterns += [
     path('protected/', ProtectedView.as_view(), name='protected'),
+    path('admin-only/', AdminOnlyView.as_view(), name='admin_only'),
 ]
 
 

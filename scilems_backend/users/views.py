@@ -1,5 +1,5 @@
 from rest_framework import generics, status
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, BasePermission
 from rest_framework.response import Response
 from .serializers import RegisterSerializer
 from django.contrib.auth import get_user_model
@@ -7,6 +7,16 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.views import APIView
 
 User  = get_user_model()
+
+class IsAdminUser(BasePermission):
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and request.user.role == 'admin'
+
+class AdminOnlyView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        return Response({"message": "Welcome, Admin!"}, status=status.HTTP_200_OK)
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -27,6 +37,12 @@ class ProtectedView(APIView):
 
     def get(self, request):
         return Response({"message": f"Hello, {request.user.username}!"}, status=status.HTTP_200_OK)
+    
+class AdminOnlyView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        return Response({"message": "Welcome, Admin!"}, status=status.HTTP_200_OK)
 
 
 class LogoutView(APIView):
