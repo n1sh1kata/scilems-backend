@@ -16,7 +16,9 @@ def register_view(request):
         if response.status_code == 201:
             return redirect('login')
         else:
-            return render(request, 'pages/register.html', {'error': response.json().get('message', 'Registration failed.')})
+            # Pass detailed error messages to the template
+            errors = response.json()
+            return render(request, 'pages/register.html', {'errors': errors, 'form_data': data})
     return render(request, 'pages/register.html')
 
 
@@ -38,7 +40,8 @@ def login_view(request):
             request.session['access_token'] = response.json().get('access')
             return redirect('protected')
         else:
-            return render(request, 'pages/login.html', {'error': 'Invalid credentials.'})
+            errors = response.json()
+            return render(request, 'pages/login.html', {'errors': errors, 'form_data': data})
     return render(request, 'pages/login.html')
 
 
@@ -58,3 +61,6 @@ def logout_view(request):
         logout(request)
         request.session.flush()  # Clear session data
         return redirect('login')
+    
+def index_view(request):
+    return render(request, 'pages/index.html')

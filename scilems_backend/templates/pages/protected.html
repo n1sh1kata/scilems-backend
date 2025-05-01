@@ -1,10 +1,38 @@
 {% extends 'base.html' %}
-{% block title %}Protected{% endblock %}
+{% block title %}Dashboard{% endblock %}
+
 {% block content %}
-<h1>Protected Page</h1>
-<p>{{ message }}</p>
-<form method="POST" action="{% url 'logout' %}">
-    {% csrf_token %}
-    <button type="submit">Logout</button>
-</form>
+<div class="flex min-h-screen">
+  <!-- Sidebar -->
+  <aside class="w-64 bg-white border-r border-gray-200 shadow-md hidden sm:block">
+    <div class="p-6">
+      <h2 class="text-xl font-bold text-blue-600">My Dashboard</h2>
+    </div>
+    <nav class="px-4 space-y-2">
+      <a href="#" class="block px-4 py-2 rounded hover:bg-blue-100 text-gray-700">Home</a>
+      <a href="#" class="block px-4 py-2 rounded hover:bg-blue-100 text-gray-700">Profile</a>
+      <a href="#" class="block px-4 py-2 rounded hover:bg-blue-100 text-gray-700">Settings</a>
+    </nav>
+  </aside>
+
+  <!-- Main content -->
+  <div class="flex-1 bg-gray-100 p-8">
+    <!-- Top Bar -->
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-3xl font-semibold text-gray-800">Welcome</h1>
+      <form method="POST" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit" class="inline-flex items-center px-4 py-2 bg-red-600 text-white text-sm font-medium rounded hover:bg-red-700">
+          Logout
+        </button>
+      </form>
+    </div>
+
+    <!-- Message Panel -->
+    <div class="bg-white p-6 rounded-lg shadow text-gray-700">
+      <h2 class="text-xl font-semibold text-blue-600 mb-2">Dashboard Info</h2>
+      <p>{{ message }}</p>
+    </div>
+  </div>
+</div>
 {% endblock %}

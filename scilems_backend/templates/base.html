@@ -1,23 +1,36 @@
 {% load static %}
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Scilems Frontend{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="description" content="User Authentication with Django, Tailwind, and Flowbite" />
+
+  <title>{% block title %}SCILEMS{% endblock %}</title>
+
+  <!-- Tailwind CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@latest/dist/tailwind.min.css" rel="stylesheet" />
+
+  <!-- Flowbite CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.css" rel="stylesheet" />
+
+  <!-- Optional: Your custom stylesheet -->
+  <!-- <link rel="stylesheet" href="{% static 'styles.css' %}" /> -->
+
+  <!-- Flowbite JS (needs Alpine.js or jQuery for some components) -->
+  <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js" defer></script>
 </head>
-<body>
-    <header>
-        <nav>
-            <a href="{% url 'register' %}">Register</a>
-            <a href="{% url 'login' %}">Login</a>
-            <a href="{% url 'protected' %}">Protected</a>
-        </nav>
-    </header>
-    <main>
-        {% block content %}{% endblock %}
-    </main>
+
+<body class="bg-gray-100 text-gray-800 min-h-screen antialiased flex items-center justify-center">
+  
+  <!-- Page Content -->
+  <main class="w-full">
+    {% block content %}{% endblock %}
+  </main>
+
 </body>
+
 </html>
