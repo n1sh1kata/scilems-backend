@@ -20,5 +20,8 @@ from django.urls import include, path
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/auth/', include('users.urls')),
+    path('api/equipment/', include('equipment.urls')),
+    # path('api/cart/', include('cart.urls')),
+    # path('api/transaction/', include('transaction.urls')),
     path('', include('scilems_frontend.urls')),
 ]
