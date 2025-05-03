@@ -2,6 +2,25 @@ from django.db import models
 from django.conf import settings
 from cart.models import Cart
 
+def update_status(self, new_status):
+    valid_transitions = {
+        'applying': ['approved'],
+        'approved': ['borrowed'],
+        'borrowed': ['returned'],
+        'returned': ['archived'],
+    }
+    if new_status not in valid_transitions[self.current_status]:
+        raise ValueError(f"Invalid status transition from {self.current_status} to {new_status}.")
+    self.current_status = new_status
+    self.save()
+
+def save(self, *args, **kwargs):
+    if self.current_status == 'borrowed':
+        for cart in self.carts.all():
+            cart.equipment.stock -= cart.quantity
+            cart.equipment.save()
+    super().save(*args, **kwargs)
+
 class Transaction(models.Model):
     STATUS_CHOICES = [
         ('applying', 'Applying'),

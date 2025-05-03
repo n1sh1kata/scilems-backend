@@ -21,6 +21,12 @@ class TransactionSerializer(serializers.ModelSerializer):
         carts = validated_data.pop('carts')
         transaction = Transaction.objects.create(**validated_data)
         transaction.carts.set(carts)
+
+        # Clear cart items after linking to the transaction
+        for cart in carts:
+            cart.quantity = 0
+            cart.save()
+
         return transaction
 
     def update(self, instance, validated_data):
@@ -28,3 +34,20 @@ class TransactionSerializer(serializers.ModelSerializer):
         if carts is not None:
             instance.carts.set(carts)
         return super().update(instance, validated_data)
+    
+    def validate(self, data):
+        carts = data.get('carts', [])
+        for cart in carts:
+            if cart.quantity > cart.equipment.stock:
+                raise serializers.ValidationError(
+                    f"Not enough stock for {cart.equipment.eqname}. Available: {cart.equipment.stock}."
+                )
+        return data
+    
+    def validate_carts(self, carts):
+        for cart in carts:
+            if cart.user != self.context['request'].user:
+                raise serializers.ValidationError("You can only include your own cart items in a transaction.")
+        return carts
+    
+    

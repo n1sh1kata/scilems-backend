@@ -5,17 +5,33 @@ from .serializers import TransactionSerializer
 
 class IsAdminOrOwner(permissions.BasePermission):
     """
-    Custom permission to allow only admins to perform all actions.
-    Regular users can only create transactions with status 'applying' and view their own transactions.
+    Custom permission to allow:
+    - Admins to perform all actions.
+    - Regular users to only view their own transactions and create new ones.
     """
 
+    def has_permission(self, request, view):
+        # Admins can perform all actions
+        if request.user.is_authenticated and request.user.role == 'admin':
+            return True
+
+        # Regular users can only perform safe methods (GET, HEAD, OPTIONS) or create transactions (POST)
+        if request.method in permissions.SAFE_METHODS or request.method == 'POST':
+            return True
+
+        return False
+
     def has_object_permission(self, request, view, obj):
-        # Admins can access all transactions
+        # Admins can perform all actions
         if request.user.role == 'admin':
             return True
 
-        # Regular users can only access their own transactions
-        return obj.user == request.user
+        # Regular users can only view their own transactions
+        if request.method in permissions.SAFE_METHODS:
+            return obj.user == request.user
+
+        # Deny update or delete for regular users
+        return False
 
 
 class TransactionListCreateView(generics.ListCreateAPIView):
@@ -27,6 +43,14 @@ class TransactionListCreateView(generics.ListCreateAPIView):
         if self.request.user.role != 'admin':
             return Transaction.objects.filter(user=self.request.user)
         return Transaction.objects.all()
+    
+    from rest_framework.exceptions import ValidationError
+
+    def perform_create(self, serializer):
+        try:
+            serializer.save(user=self.request.user)
+        except ValidationError as e:
+            raise PermissionDenied(f"Transaction creation failed: {e.detail}")
 
     def perform_create(self, serializer):
         # Restrict regular users to only create transactions with status 'applying'
@@ -43,10 +67,12 @@ class TransactionRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView
     permission_classes = [permissions.IsAuthenticated, IsAdminOrOwner]
 
     def get_queryset(self):
-        # Regular users can only see their own transactions
-        if self.request.user.role != 'admin':
-            return Transaction.objects.filter(user=self.request.user)
-        return Transaction.objects.all()
+        # Admins can access all transactions
+        if self.request.user.role == 'admin':
+            return Transaction.objects.all()
+
+        # Regular users can only access their own transactions
+        return Transaction.objects.filter(user=self.request.user)
 
     def delete(self, request, *args, **kwargs):
         instance = self.get_object()
