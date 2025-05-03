@@ -1,6 +1,8 @@
 from rest_framework import generics, permissions
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.response import Response
 from .models import Transaction
+from rest_framework import status
 from .serializers import TransactionSerializer
 
 class IsAdminOrOwner(permissions.BasePermission):
@@ -43,28 +45,14 @@ class TransactionListCreateView(generics.ListCreateAPIView):
         if self.request.user.role != 'admin':
             return Transaction.objects.filter(user=self.request.user)
         return Transaction.objects.all()
-    
-    from rest_framework.exceptions import ValidationError
 
     def perform_create(self, serializer):
-        try:
-            serializer.save(user=self.request.user)
-        except ValidationError as e:
-            raise PermissionDenied(f"Transaction creation failed: {e.detail}")
-
-    def perform_create(self, serializer):
-        # Restrict regular users to only create transactions with status 'applying'
-        if self.request.user.role != 'admin' and serializer.validated_data.get('current_status') != 'applying':
-            raise PermissionDenied("You can only create transactions with status 'applying'.")
         serializer.save(user=self.request.user)
 
 
-from rest_framework.response import Response
-from rest_framework import status
-
 class TransactionRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = TransactionSerializer
-    permission_classes = [permissions.IsAuthenticated, IsAdminOrOwner]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         # Admins can access all transactions
