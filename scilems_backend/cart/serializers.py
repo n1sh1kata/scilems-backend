@@ -13,7 +13,8 @@ class CartSerializer(serializers.ModelSerializer):
         equipment = attrs.get('equipment')
 
         # Check if the equipment is already in the user's cart
-        if Cart.objects.filter(user=user, equipment=equipment, transaction__isnull=True).exists():
+        # Remove the transaction__isnull=True condition
+        if Cart.objects.filter(user=user, equipment=equipment).exists():
             raise serializers.ValidationError(
                 f"The equipment '{equipment.eqname}' is already in your cart."
             )

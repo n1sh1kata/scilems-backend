@@ -1,6 +1,8 @@
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
 from rest_framework.filters import SearchFilter, OrderingFilter
+
+from scilems_backend.utils import rate_limit
 from .models import Category, Equipment
 from .serializers import CategorySerializer, EquipmentSerializer
 from rest_framework.response import Response
@@ -39,7 +41,16 @@ class EquipmentViewSet(viewsets.ModelViewSet):
     ordering_fields = ['stock', 'eqname']
     ordering = ['eqname']  # Default ordering
 
+    @rate_limit(requests=10, window=60) 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         self.perform_destroy(instance)
         return Response({"message": "Equipment deleted successfully."}, status=status.HTTP_200_OK)
+    
+    @rate_limit(requests=20, window=60)  # 20 equipment operations per minute
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
+
+    @rate_limit(requests=20, window=60)
+    def update(self, request, *args, **kwargs):
+        return super().update(request, *args, **kwargs)

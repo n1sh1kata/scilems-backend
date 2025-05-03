@@ -1,6 +1,8 @@
 from rest_framework import generics, permissions
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
+
+from scilems_backend.utils import rate_limit
 from .models import Transaction
 from rest_framework import status
 from .serializers import TransactionSerializer
@@ -48,6 +50,10 @@ class TransactionListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+    
+    @rate_limit(requests=5, window=300)  # 5 transactions per 5 minutes
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
 
 
 class TransactionRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):

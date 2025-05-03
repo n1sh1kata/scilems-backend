@@ -5,6 +5,7 @@ from .serializers import RegisterSerializer
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.views import APIView
+from scilems_backend.utils import rate_limit
 
 User  = get_user_model()
 
@@ -23,6 +24,7 @@ class RegisterView(generics.CreateAPIView):
     permission_classes = (AllowAny,)
     serializer_class = RegisterSerializer
 
+    @rate_limit(requests=3, window=300)
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
         response.data = {

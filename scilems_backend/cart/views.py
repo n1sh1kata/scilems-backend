@@ -3,6 +3,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .models import Cart
 from .serializers import CartSerializer
+from scilems_backend.utils import rate_limit
 
 class CartListCreateView(generics.ListCreateAPIView):
     queryset = Cart.objects.all()
@@ -14,6 +15,10 @@ class CartListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+    @rate_limit(requests=10, window=60)  # 10 cart operations per minute
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
 
 class CartUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Cart.objects.all()
@@ -36,6 +41,7 @@ class CartUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
 class CartDeleteAllView(generics.DestroyAPIView):
     permission_classes = [IsAuthenticated]
 
+    @rate_limit(requests=5, window=60) 
     def delete(self, request, *args, **kwargs):
         cart_items = Cart.objects.filter(user=request.user)
         if cart_items.exists():
