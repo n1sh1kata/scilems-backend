@@ -1,18 +1,22 @@
 # scilems-backend
 
-Welcome to the **scilems-backend** repository! This project serves as the backend for my final project, providing essential user authentication functionalities.
+Welcome to the **scilems-backend** repository! This project serves as the backend for my final project, providing essential user authentication and resource management functionalities.
 
-## User Authentication API
+## API Endpoints
 
-This API allows users to register, log in, and access protected routes. Below are the details for each endpoint.
+Below is the documentation for the available API endpoints.
 
-### 1. User Registration
+---
+
+### 1. User Authentication
+
+#### a. User Registration
 
 - **Method**: `POST`
 - **Endpoint**: `/api/auth/register/`
-- **Description**: This endpoint allows new users to create an account by providing a username, email, and password.
+- **Description**: Allows new users to create an account.
 
-- **Request Body** (JSON):
+- **Request Body**:
 
   ```json
   {
@@ -24,16 +28,30 @@ This API allows users to register, log in, and access protected routes. Below ar
   ```
 
 - **Response**:
-  - **Success**: Returns a success message and user details.
-  - **Error**: Returns validation errors if the input is invalid.
+  - **Success**:
+    ```json
+    {
+      "message": "User registered successfully.",
+      "user": {
+        "username": "john",
+        "email": "john@example.com"
+      }
+    }
+    ```
+  - **Error**:
+    ```json
+    {
+      "password": ["Passwords do not match."]
+    }
+    ```
 
-### 2. User Login
+#### b. User Login
 
 - **Method**: `POST`
 - **Endpoint**: `/api/auth/login/`
-- **Description**: This endpoint allows users to log in by providing their username and password.
+- **Description**: Allows users to log in and retrieve access and refresh tokens.
 
-- **Request Body** (JSON):
+- **Request Body**:
 
   ```json
   {
@@ -43,26 +61,276 @@ This API allows users to register, log in, and access protected routes. Below ar
   ```
 
 - **Response**:
-  - **Success**: Returns an access token and user details.
-  - **Error**: Returns an error message if the credentials are incorrect.
+  - **Success**:
+    ```json
+    {
+      "access": "<access_token>",
+      "refresh": "<refresh_token>"
+    }
+    ```
+  - **Error**:
+    ```json
+    {
+      "detail": "No active account found with the given credentials."
+    }
+    ```
 
-### 3. Access Protected Route
+#### c. Token Refresh
+
+- **Method**: `POST`
+- **Endpoint**: `/api/auth/token/refresh/`
+- **Description**: Refreshes the access token using the refresh token.
+
+- **Request Body**:
+
+  ```json
+  {
+    "refresh": "<refresh_token>"
+  }
+  ```
+
+- **Response**:
+  - **Success**:
+    ```json
+    {
+      "access": "<new_access_token>"
+    }
+    ```
+
+#### d. Logout
+
+- **Method**: `POST`
+- **Endpoint**: `/api/auth/logout/`
+- **Description**: Logs out the user by blacklisting the refresh token.
+
+- **Request Body**:
+
+  ```json
+  {
+    "refresh": "<refresh_token>"
+  }
+  ```
+
+- **Response**:
+  - **Success**:
+    ```json
+    {
+      "message": "Successfully logged out."
+    }
+    ```
+  - **Error**:
+    ```json
+    {
+      "error": "Refresh token is required."
+    }
+    ```
+
+#### e. Protected Route
 
 - **Method**: `GET`
 - **Endpoint**: `/api/auth/protected/`
-- **Description**: This endpoint is accessible only to authenticated users. It requires a valid Bearer token for access.
+- **Description**: Accessible only to authenticated users.
 
-- **Authorization**:
+- **Headers**:
 
-  - **Type**: Bearer Token
-  - **Token**: Include the access token received from a successful login in the Authorization header:
-    ```
-    Authorization: Bearer <access_token>
-    ```
+  ```
+  Authorization: Bearer <access_token>
+  ```
 
 - **Response**:
-  - **Success**: Returns protected resource data.
-  - **Error**: Returns an error message if the token is missing or invalid.
+  - **Success**:
+    ```json
+    {
+      "message": "Hello, john!"
+    }
+    ```
+  - **Error**:
+    ```json
+    {
+      "detail": "Authentication credentials were not provided."
+    }
+    ```
+
+---
+
+### 2. Equipment Management
+
+#### a. List Categories
+
+- **Method**: `GET`
+- **Endpoint**: `/api/equipment/categories/`
+- **Description**: Retrieves a list of all equipment categories.
+
+- **Headers**:
+
+  ```
+  Authorization: Bearer <access_token>
+  ```
+
+- **Response**:
+  ```json
+  [
+    {
+      "id": 1,
+      "categoryname": "Microscopes"
+    },
+    {
+      "id": 2,
+      "categoryname": "Chemicals"
+    }
+  ]
+  ```
+
+#### b. Create Equipment
+
+- **Method**: `POST`
+- **Endpoint**: `/api/equipment/equipments/`
+- **Description**: Allows admin users to create new equipment.
+
+- **Headers**:
+
+  ```
+  Authorization: Bearer <access_token>
+  ```
+
+- **Request Body**:
+
+  ```json
+  {
+    "category": 1,
+    "eqname": "Microscope X200",
+    "stock": 10,
+    "description": "High-quality microscope."
+  }
+  ```
+
+- **Response**:
+  - **Success**:
+    ```json
+    {
+      "id": 1,
+      "category": 1,
+      "eqname": "Microscope X200",
+      "stock": 10,
+      "description": "High-quality microscope."
+    }
+    ```
+  - **Error**:
+    ```json
+    {
+      "stock": ["Stock cannot be negative."]
+    }
+    ```
+
+---
+
+### 3. Cart Management
+
+#### a. Add to Cart
+
+- **Method**: `POST`
+- **Endpoint**: `/api/cart/`
+- **Description**: Adds an item to the user's cart.
+
+- **Headers**:
+
+  ```
+  Authorization: Bearer <access_token>
+  ```
+
+- **Request Body**:
+
+  ```json
+  {
+    "equipment": 1,
+    "quantity": 2
+  }
+  ```
+
+- **Response**:
+  - **Success**:
+    ```json
+    {
+      "id": 1,
+      "user": 1,
+      "equipment": 1,
+      "quantity": 2
+    }
+    ```
+  - **Error**:
+    ```json
+    {
+      "quantity": ["Only 5 units of 'Microscope X200' are available."]
+    }
+    ```
+
+#### b. View Cart
+
+- **Method**: `GET`
+- **Endpoint**: `/api/cart/`
+- **Description**: Retrieves the user's cart items.
+
+- **Headers**:
+
+  ```
+  Authorization: Bearer <access_token>
+  ```
+
+- **Response**:
+  ```json
+  [
+    {
+      "id": 1,
+      "user": 1,
+      "equipment": 1,
+      "quantity": 2
+    }
+  ]
+  ```
+
+---
+
+### 4. Transaction Management
+
+#### a. Create Transaction
+
+- **Method**: `POST`
+- **Endpoint**: `/api/transaction/`
+- **Description**: Creates a new transaction for the user.
+
+- **Headers**:
+
+  ```
+  Authorization: Bearer <access_token>
+  ```
+
+- **Request Body**:
+
+  ```json
+  {
+    "cart_ids": [1, 2],
+    "remarks": "Urgent request."
+  }
+  ```
+
+- **Response**:
+  - **Success**:
+    ```json
+    {
+      "id": 1,
+      "user": 1,
+      "current_status": "applying",
+      "remarks": "Urgent request."
+    }
+    ```
+  - **Error**:
+    ```json
+    {
+      "carts": ["You can only include your own cart items in a transaction."]
+    }
+    ```
+
+---
 
 ## Getting Started
 
@@ -77,5 +345,3 @@ Contributions are welcome! Please read the [Contributing Guidelines](#) for more
 This project is licensed under the [MIT License](#).
 
 ---
-
-Feel free to reach out if you have any questions or need further assistance!
