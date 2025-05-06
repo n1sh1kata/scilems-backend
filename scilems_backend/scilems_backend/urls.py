@@ -24,4 +24,5 @@ urlpatterns = [
     path('api/cart/', include('cart.urls')),
     path('api/transaction/', include('transaction.urls')),
     path('', include('scilems_frontend.urls')),
+    path('api/userprofile/', include('userProfile.urls')),
 ]
