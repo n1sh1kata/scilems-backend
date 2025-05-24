@@ -336,6 +336,45 @@ Below is the documentation for the available API endpoints.
 
 To get started with the scilems-backend, clone the repository and follow the setup instructions in the [Installation Guide](#).
 
+## Setup Instructions
+
+1. Clone the repository
+2. Create a virtual environment and activate it:
+```bash
+python -m venv env
+source env/bin/activate  # On Windows: env\Scripts\activate
+```
+
+3. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+4. Create `.env` file:
+```bash
+cp .env.example .env
+```
+
+5. Update the `.env` file with your settings
+
+6. Run migrations:
+```bash
+python manage.py migrate
+```
+
+7. Start the development server:
+```bash
+python manage.py runserver
+```
+
+## Security Notes
+- Never commit `.env` file to version control
+- Keep your secret key private
+- Set DEBUG=False in production
+- Use strong database passwords
+- Regularly update dependencies
+
+
 ## Contributing
 
 Contributions are welcome! Please read the [Contributing Guidelines](#) for more information on how to contribute to this project.

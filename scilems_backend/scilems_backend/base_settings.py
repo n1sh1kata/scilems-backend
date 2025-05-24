@@ -10,8 +10,13 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+import os
 from datetime import timedelta
 from pathlib import Path
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,13 +26,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-r$g@h4sf#&b85mzpe$o-cfzhpzi9d!p&o2-zf39(@s%8$44+9t'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 
 # Application definition
 
@@ -84,14 +88,53 @@ WSGI_APPLICATION = 'scilems_backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+# MongoDB connection
+# from mongoengine import connect
+
+# connect(host=os.getenv('MONGO_URI'))
+
+
+try:
+    from pymongo import MongoClient
+    from pymongo.server_api import ServerApi
+    
+    client = MongoClient(os.getenv('MONGO_URI'), server_api=ServerApi('1'))
+    # Test connection
+    client.admin.command('ping')
+    print("MongoDB connection successful!")
+except Exception as e:
+    print(f"MongoDB connection error: {e}")
+
+# Additional security settings
+SECURE_SSL_REDIRECT = not DEBUG
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+SECURE_HSTS_SECONDS = 31536000  # 1 year
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+
+
+# MongoDB connection
+# MONGODB_DATABASES = {
+#     'default': {
+#         'NAME': os.getenv('DB_NAME'),
+#         'HOST': os.getenv('MONGO_URI'),
+#         'TEST': {'NAME': 'test_' + os.getenv('DB_NAME', '')}
+#     }
+# }
+
+
 DATABASES = { 
     'default': { 
         'ENGINE': 'django.db.backends.postgresql', 
-        'NAME': 'scilems_backend',
-        'USER': 'myuser',
-        'PASSWORD': '123',
-        'HOST': 'localhost', 
-        'PORT': '5433', 
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'), 
+        'PORT': os.getenv('DB_PORT'), 
     } 
 }
 
