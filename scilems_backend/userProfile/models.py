@@ -20,7 +20,16 @@ class UserProfile(models.Model):
     email = models.EmailField()
 
     def save(self, *args, **kwargs):
+        # Validate the image before saving
+        if self.image:
+            try:
+                validate_image(self.image)  # Call the validation function
+            except ValidationError as e:
+                raise e  # Prevent saving if validation fails
+
         super().save(*args, **kwargs)
+
+        # Process the image only if it exists and passes validation
         if self.image:
             img = Image.open(self.image.path)
             # Crop to 1:1 aspect ratio

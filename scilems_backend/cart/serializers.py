@@ -23,10 +23,15 @@ class CartSerializer(serializers.ModelSerializer):
 
     def validate_quantity(self, value):
         equipment_id = self.initial_data.get('equipment')
-        try:
-            equipment_obj = Equipment.objects.get(id=equipment_id)
-        except Equipment.DoesNotExist:
-            raise serializers.ValidationError("The equipment you selected does not exist. Please choose a valid item.")
+
+        # Use the equipment from the instance if not provided in data (i.e., on update)
+        if not equipment_id and self.instance:
+            equipment_obj = self.instance.equipment
+        else:
+            try:
+                equipment_obj = Equipment.objects.get(id=equipment_id)
+            except Equipment.DoesNotExist:
+                raise serializers.ValidationError("The equipment you selected does not exist. Please choose a valid item.")
 
         if value <= 0:
             raise serializers.ValidationError("The quantity must be greater than 0.")

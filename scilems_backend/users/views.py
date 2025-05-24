@@ -21,14 +21,14 @@ class AdminOnlyView(APIView):
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
-    permission_classes = (AllowAny,)
+    permission_classes = [IsAdminUser]  # Restrict to admin users only
     serializer_class = RegisterSerializer
 
     @rate_limit(requests=3, window=300)
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
         response.data = {
-            "message": "User  registered successfully.",
+            "message": "User registered successfully.",
             "user": response.data
         }
         return response
