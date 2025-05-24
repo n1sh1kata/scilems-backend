@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from cart.models import Cart
+from equipment.models import Equipment
 
 
 class Transaction(models.Model):
@@ -28,23 +29,12 @@ class Transaction(models.Model):
         return f"Transaction {self.id} - {self.user.username}"
 
     def save(self, *args, **kwargs):
-        # Get the previous status of the transaction
-        if self.pk:
-            previous_status = Transaction.objects.get(pk=self.pk).current_status
-        else:
-            previous_status = None
-
-        # Handle stock adjustments based on status transitions
-        if previous_status != self.current_status:
-            if self.current_status == 'borrowed':
-                # Deduct stock when status changes to 'borrowed'
-                for cart in self.carts.all():
-                    cart.equipment.stock -= cart.quantity
-                    cart.equipment.save()
-            elif self.current_status == 'returned':
-                # Add stock back when status changes to 'returned'
-                for cart in self.carts.all():
-                    cart.equipment.stock += cart.quantity
-                    cart.equipment.save()
-
         super().save(*args, **kwargs)
+
+class TransactionItem(models.Model):
+    transaction = models.ForeignKey(Transaction, on_delete=models.CASCADE, related_name='items')
+    equipment = models.ForeignKey(Equipment, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField()
+
+    def __str__(self):
+        return f"{self.equipment.eqname} x {self.quantity} (Transaction {self.transaction.id})"
