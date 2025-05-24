@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'transaction',
     'equipment',
     'userProfile',
+    'logs',
 ]
 
 MIDDLEWARE = [

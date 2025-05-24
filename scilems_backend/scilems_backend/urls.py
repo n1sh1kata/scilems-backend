@@ -25,4 +25,5 @@ urlpatterns = [
     path('api/transaction/', include('transaction.urls')),
     path('', include('scilems_frontend.urls')),
     path('api/userprofile/', include('userProfile.urls')),
+    path('api/logs/', include('logs.urls')),
 ]
